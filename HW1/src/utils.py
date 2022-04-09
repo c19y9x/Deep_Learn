@@ -1,5 +1,7 @@
 # 用到的一些类和函数
 import torch
+from sklearn.feature_selection import SelectKBest
+from sklearn.feature_selection import chi2
 from torch.utils.data import Dataset, random_split
 
 import pandas as pd
@@ -22,7 +24,7 @@ def select_feature(train_set,valid_set,test_set,select_all=True):
     if select_all:
         feat_idx = list(range(raw_x_train.shape[1]))
     else:
-        feat_idx = [0, 1, 2, 3, 4]  # TODO: Select suitable feature columns.
+        feat_idx = [0, 1, 2, 3, 4]  # Select suitable feature columns.
 
     return raw_x_train[:, feat_idx], raw_x_valid[:, feat_idx], raw_x_test[:, feat_idx], y_train, y_valid
 
@@ -42,5 +44,22 @@ class COVID19Dataset(Dataset):
 
     def __len__(self):
         return len(self.x)
+def get_feature_importance(feature_data, label_data, k =4,column = None):
+    """
+    column为列名
+    """
+    model = SelectKBest(chi2, k=k)#选择k个最佳特征
+    X_new = model.fit_transform(feature_data, label_data)
+    #feature_data是特征数据，label_data是标签数据，该函数可以选择出k个特征
+    # print('x_new', X_new)
+    scores = model.scores_
+    # print(scores)
+    # 按重要性排序，选出最重要的 k 个
+    indices = np.argsort(scores)[::-1] #找到重要K个的下标
+    if column:
+        k_best_features = [column[i] for i in indices[0:k].tolist()]
+        print('k best features are: ',k_best_features)
+    # return X_new, indices[0:k]
+    return indices[0:k]
 # 测试
 # COVID19Dataset('../data/covid.train.csv')
