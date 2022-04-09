@@ -1,19 +1,9 @@
+import torch
 import torchvision
-from torch.utils.data import Dataset
-
+from torch.utils.data import Dataset, random_split
+import numpy as np
 import pandas as pd
+import utils
 
-class COVID19Dataset(Dataset):
-    def __init__(self,train_path,test_path):
-        train_data,test_data = pd.read_csv(train_path).values, pd.read_csv(test_path).values
-        print(type(train_data),type(test_data))
-
-    def __getitem__(self, idx):
-        return
-
-    def __len__(self):
-        return
-# 测试
-COVID19Dataset('../data/covid.train.csv','../data/covid.test.csv')
-
+print(utils.train_valid_split(pd.read_csv('../data/covid.train.csv').values,0.3))
 # 读取数据集
