@@ -2,10 +2,13 @@
 import torch
 from sklearn.feature_selection import SelectKBest
 from sklearn.feature_selection import chi2
+from torch import nn
 from torch.utils.data import Dataset, random_split
 
 import pandas as pd
 import numpy as np
+from torch.utils.tensorboard import SummaryWriter
+
 
 def train_valid_split(data_set, valid_ratio):
     '''将提供的培训数据分为培训集和验证集'''
@@ -30,7 +33,7 @@ def select_feature(train_set,valid_set,test_set,select_all=True):
 
 class COVID19Dataset(Dataset):
     def __init__(self,x,y=None):
-        if y==None:
+        if y is None:
             self.y = y
         else:
             self.y = torch.FloatTensor(y)
@@ -61,5 +64,24 @@ def get_feature_importance(feature_data, label_data, k =4,column = None):
         print('k best features are: ',k_best_features)
     # return X_new, indices[0:k]
     return indices[0:k]
+
+class My_Model(nn.Module):
+    def __init__(self, input_dim):
+        super(My_Model, self).__init__()
+        # TODO: modify model's structure, be aware of dimensions.
+        self.layers = nn.Sequential(
+            nn.Linear(input_dim, 16),
+            nn.ReLU(),
+            nn.Linear(16, 8),
+            nn.ReLU(),
+            nn.Linear(8, 1)
+        )
+
+    def forward(self, x):
+        y = self.layers(x)
+        y = y.squeeze(1) # (B, 1) -> (B) 如：[[3],[2],[1]]->[3,2,1]
+        return y
+
+
 # 测试
 # COVID19Dataset('../data/covid.train.csv')
