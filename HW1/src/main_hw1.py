@@ -10,7 +10,7 @@ import utils
 
 # print(utils.train_valid_split(pd.read_csv('../data/covid.train.csv').values,0.3))
 df = pd.read_csv('../data/covid.train.csv')
-df1 = pd.read_csv('../data/covid.test.csv')
+df1 = pd.read_csv('../data/test.csv')
 # 训练验证集
 data = df.values
 # 测试集
@@ -44,6 +44,7 @@ for i in range(0,5):
     indices = indices-16
 indices = indices1+16
 indices = indices.astype("int")
+print(indices)
 
 train_label_data , valid_label_data = train_data[:,-1] , valid_data[:,-1]
 train_feature_data , valid_feature_data = train_data[:,indices],valid_data[:,indices]
@@ -53,7 +54,7 @@ test_data = test_data[:,indices]
 train_dataset = utils.COVID19Dataset(train_feature_data,train_label_data)
 valid_dataset = utils.COVID19Dataset(valid_feature_data,valid_label_data)
 test_dataset = utils.COVID19Dataset(valid_data)
-print(train_feature_data.shape)
+
 
 # Pytorch data loader loads pytorch dataset into batches.
 train_loader = DataLoader(train_dataset, batch_size=10, shuffle=True, pin_memory=True,drop_last=True)
@@ -77,7 +78,7 @@ total_train_step = 0
 # 记录测试的次数
 total_test_step = 0
 # 训练的轮数
-epoch = 10
+epoch = 3
 
 # 添加tensorboard
 writer = SummaryWriter("./logs_train")
@@ -92,9 +93,9 @@ for i in range(epoch):
         if torch.cuda.is_available():
             x = x.cuda()
             y = y.cuda()
-        x.to("cuda")
         outputs = myModel(x)
         loss = loss1(outputs, y)
+        # print(loss)
 
         # 优化器优化模型
         optimizer.zero_grad()
@@ -129,6 +130,9 @@ for i in range(epoch):
     # writer.add_scalar("test_accuracy", total_accuracy/test_data_size, total_test_step)
     total_test_step = total_test_step + 1
 
-print(myModel(torch.FloatTensor(test_data).cuda()))
+if torch.cuda.is_available():
+    print(myModel(torch.FloatTensor(test_data).cuda()))
+else:
+    print(myModel(torch.FloatTensor(test_data)))
 torch.save(myModel, "myModel.pth")
 print("模型已保存")

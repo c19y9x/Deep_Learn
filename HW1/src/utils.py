@@ -38,7 +38,8 @@ class COVID19Dataset(Dataset):
         else:
             self.y = torch.FloatTensor(y)
         self.x = torch.FloatTensor(x)
-
+        self.x = (self.x - self.x.mean(dim=0, keepdim=True))/self.x.std(dim=0, keepdim=True)
+        print(self.x.min(dim=0,keepdim=True))
     def __getitem__(self, idx):
         if self.y is None:
             return self.x[idx]
@@ -61,7 +62,7 @@ def get_feature_importance(feature_data, label_data, k =4,column = None):
     indices = np.argsort(scores)[::-1] #找到重要K个的下标
     if column:
         k_best_features = [column[i] for i in indices[0:k].tolist()]
-        print('k best features are: ',k_best_features)
+        # print('k best features are: ',k_best_features)
     # return X_new, indices[0:k]
     return indices[0:k]
 
