@@ -35,9 +35,20 @@ label_data = data[:,-1]
 column = list(df.columns.values)[102:117]
 # 获得特征列名称
 indices = utils.get_feature_importance(feature_data,label_data.astype("int"),10,column)
+
+indices = 102+indices
+indices1 = []
+for i in range(0,5):
+    indices2 = indices-16
+    indices1 = np.append(indices1,indices2)
+    indices = indices-16
+indices = indices1+16
+indices = indices.astype("int")
+
 train_label_data , valid_label_data = train_data[:,-1] , valid_data[:,-1]
-train_feature_data , valid_feature_data = train_data[:,102+indices],valid_data[:,102+indices]
-test_data = test_data[:,102+indices]
+train_feature_data , valid_feature_data = train_data[:,indices],valid_data[:,indices]
+test_data = test_data[:,indices]
+
 
 train_dataset = utils.COVID19Dataset(train_feature_data,train_label_data)
 valid_dataset = utils.COVID19Dataset(valid_feature_data,valid_label_data)
@@ -49,7 +60,7 @@ train_loader = DataLoader(train_dataset, batch_size=10, shuffle=True, pin_memory
 valid_loader = DataLoader(valid_dataset, batch_size=10, shuffle=True, pin_memory=True,drop_last=True)
 test_loader = DataLoader(test_dataset, batch_size=10, shuffle=False, pin_memory=True,drop_last=True)
 
-myModel = utils.My_Model(10)
+myModel = utils.My_Model(50)
 if torch.cuda.is_available():
     myModel = myModel.cuda()
 
@@ -66,7 +77,7 @@ total_train_step = 0
 # 记录测试的次数
 total_test_step = 0
 # 训练的轮数
-epoch = 50
+epoch = 10
 
 # 添加tensorboard
 writer = SummaryWriter("./logs_train")
@@ -118,5 +129,6 @@ for i in range(epoch):
     # writer.add_scalar("test_accuracy", total_accuracy/test_data_size, total_test_step)
     total_test_step = total_test_step + 1
 
-    # torch.save(myModel, "myModel_{}.pth".format(i))
-    print("模型已保存")
+print(myModel(torch.FloatTensor(test_data).cuda()))
+torch.save(myModel, "myModel.pth")
+print("模型已保存")
