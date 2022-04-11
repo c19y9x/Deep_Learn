@@ -169,7 +169,7 @@ config = {
     'seed': 5201314,      # Your seed number, you can pick your lucky number. :)
     'select_all': True,   # Whether to use all features.
     'valid_ratio': 0.2,   # validation_size = train_size * valid_ratio
-    'n_epochs': 3000,     # Number of epochs.
+    'n_epochs': 1000,     # Number of epochs.
     'batch_size': 256,
     'learning_rate': 1e-5,
     'early_stop': 400,    # If model has not improved for this many consecutive epochs, stop training.
@@ -182,8 +182,9 @@ same_seed(config['seed'])
 
 # train_data size: 2699 x 118 (id + 37 states + 16 features x 5 days)
 # test_data size: 1078 x 117 (without last day's positive rate)
-train_data, test_data = pd.read_csv('./covid.train.csv').values, pd.read_csv('./covid.test.csv').values
+train_data, test_data = pd.read_csv('../data/covid.train.csv').values, pd.read_csv('../data/covid.test.csv').values
 train_data, valid_data = train_valid_split(train_data, config['valid_ratio'], config['seed'])
+test1_data = pd.read_csv('../data/test.csv').values[:,:-1]
 
 # Print out the data size.
 print(f"""train_data size: {train_data.shape} 
@@ -207,3 +208,6 @@ test_loader = DataLoader(test_dataset, batch_size=config['batch_size'], shuffle=
 
 model = My_Model(input_dim=x_train.shape[1]).to(device) # put your model and data on the same computation device.
 trainer(train_loader, valid_loader, model, config, device)
+
+test1_data = torch.FloatTensor(test1_data).to(device)
+print(model(test1_data))

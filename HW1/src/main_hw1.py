@@ -44,12 +44,11 @@ for i in range(0,5):
     indices = indices-16
 indices = indices1+16
 indices = indices.astype("int")
-print(indices)
 
 train_label_data , valid_label_data = train_data[:,-1] , valid_data[:,-1]
-train_feature_data , valid_feature_data = train_data[:,indices],valid_data[:,indices]
-test_data = test_data[:,indices]
-
+train_feature_data , valid_feature_data = train_data[:,:-1],valid_data[:,:-1]
+test_data = test_data[:,:-1]
+print(train_feature_data.shape,valid_feature_data.shape,train_label_data.shape,valid_label_data.shape,test_data.shape)
 
 train_dataset = utils.COVID19Dataset(train_feature_data,train_label_data)
 valid_dataset = utils.COVID19Dataset(valid_feature_data,valid_label_data)
@@ -57,11 +56,11 @@ test_dataset = utils.COVID19Dataset(valid_data)
 
 
 # Pytorch data loader loads pytorch dataset into batches.
-train_loader = DataLoader(train_dataset, batch_size=10, shuffle=True, pin_memory=True,drop_last=True)
-valid_loader = DataLoader(valid_dataset, batch_size=10, shuffle=True, pin_memory=True,drop_last=True)
+train_loader = DataLoader(train_dataset, batch_size=128, shuffle=True, pin_memory=True,drop_last=True)
+valid_loader = DataLoader(valid_dataset, batch_size=128, shuffle=True, pin_memory=True,drop_last=True)
 test_loader = DataLoader(test_dataset, batch_size=10, shuffle=False, pin_memory=True,drop_last=True)
 
-myModel = utils.My_Model(50)
+myModel = utils.My_Model(117)
 if torch.cuda.is_available():
     myModel = myModel.cuda()
 
@@ -69,7 +68,7 @@ loss1 = nn.MSELoss()
 if torch.cuda.is_available():
     loss1 = loss1.cuda()
 
-learning_rate = 1e-2
+learning_rate = 1e-5
 optimizer = torch.optim.SGD(myModel.parameters(), lr=learning_rate)
 
 # 设置训练网络的一些参数
@@ -78,7 +77,7 @@ total_train_step = 0
 # 记录测试的次数
 total_test_step = 0
 # 训练的轮数
-epoch = 3
+epoch = 1000
 
 # 添加tensorboard
 writer = SummaryWriter("./logs_train")
@@ -130,6 +129,8 @@ for i in range(epoch):
     # writer.add_scalar("test_accuracy", total_accuracy/test_data_size, total_test_step)
     total_test_step = total_test_step + 1
 
+test_data = torch.FloatTensor(test_data)
+# test_data = (test_data - test_data.mean(dim=0, keepdim=True))/test_data.std(dim=0, keepdim=True)
 if torch.cuda.is_available():
     print(myModel(torch.FloatTensor(test_data).cuda()))
 else:
