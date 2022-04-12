@@ -38,7 +38,6 @@ class COVID19Dataset(Dataset):
         else:
             self.y = torch.FloatTensor(y)
         self.x = torch.FloatTensor(x)
-        # self.x = (self.x - self.x.mean(dim=0, keepdim=True))/self.x.std(dim=0, keepdim=True)
     def __getitem__(self, idx):
         if self.y is None:
             return self.x[idx]
@@ -70,9 +69,7 @@ class My_Model(nn.Module):
         super(My_Model, self).__init__()
         # TODO: modify model's structure, be aware of dimensions.
         self.layers = nn.Sequential(
-            nn.Linear(input_dim, 32),
-            nn.ReLU(),
-            nn.Linear(32, 16),
+            nn.Linear(input_dim, 16),
             nn.ReLU(),
             nn.Linear(16, 8),
             nn.ReLU(),
