@@ -29,29 +29,25 @@ model = My_Model(116)
 # model.load_state_dict(torch.load("./models/model1.ckpt"))
 model = torch.load("myModel1.pth")
 model.cuda()
-test_data = pd.read_csv('../data/covid.train.csv').values[:,1:-1]
-test_data[:,37:] = (test_data[:,37:] - test_data[:,37:].mean(axis=0, keepdims=True))/test_data[:,37:].std(axis=0, keepdims=True)
-test_label_data = torch.FloatTensor(pd.read_csv('../data/covid.train.csv').values[:,-1])
-test_dataset = utils.COVID19Dataset(test_data,test_label_data)
-testLoader = DataLoader(test_dataset, batch_size=256, shuffle=False, pin_memory=True,drop_last=True)
+test_data = pd.read_csv('../data/covid.test.csv').values[:,1:]
+test_dataset = utils.COVID19Dataset(test_data)
+testLoader = DataLoader(test_dataset, batch_size=1, shuffle=False, pin_memory=True,drop_last=True)
 
 loss1 = nn.MSELoss()
 val_rel = []
 with torch.no_grad():
     for data in testLoader:
         if torch.cuda.is_available():
-            x,y = data
+            x = data
             if torch.cuda.is_available():
                 x = x.cuda()
-                y = y.cuda()
             pred = model(x)
-            print(loss1(pred,y))
-            # val_rel.append(pred.item())
+            val_rel.append(pred.item())
         else:
             pred = model(x)
-            # val_rel.append(pred.item())
-# with open('../data/test1.csv', 'w') as f:
-#     csv_writer = csv.writer(f)  # 百度的csv写法
-#     csv_writer.writerow(['id','tested_positive'])
-#     for i in range(len(test_data)):
-#         csv_writer.writerow([str(i),str(val_rel[i])])
+            val_rel.append(pred.item())
+with open('../data/test1.csv', 'w') as f:
+    csv_writer = csv.writer(f)  # 百度的csv写法
+    csv_writer.writerow(['id','tested_positive'])
+    for i in range(len(test_data)):
+        csv_writer.writerow([str(i),str(val_rel[i])])

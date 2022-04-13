@@ -38,6 +38,8 @@ class COVID19Dataset(Dataset):
         else:
             self.y = torch.FloatTensor(y)
         self.x = torch.FloatTensor(x)
+        # self.x[:,37:] = (self.x[:,37:] - self.x[:,37:].mean(dim=0, keepdim=True))/self.x[:,37:].std(dim=0, keepdim=True)
+
     def __getitem__(self, idx):
         if self.y is None:
             return self.x[idx]

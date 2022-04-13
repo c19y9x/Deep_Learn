@@ -49,8 +49,6 @@ train_label_data , valid_label_data = train_data[:,-1] , valid_data[:,-1]
 train_feature_data , valid_feature_data = train_data[:,1:-1],valid_data[:,1:-1]
 test_data = test_data[:,:-1]
 print(train_feature_data.shape,valid_feature_data.shape,train_label_data.shape,valid_label_data.shape,test_data.shape)
-train_feature_data[:,37:] = (train_feature_data[:,37:] - train_feature_data[:,37:].mean(axis=0, keepdims=True))/train_feature_data[:,37:].std(axis=0, keepdims=True)
-valid_feature_data[:,37:] = (valid_feature_data[:,37:] - valid_feature_data[:,37:].mean(axis=0, keepdims=True))/valid_feature_data[:,37:].std(axis=0, keepdims=True)
 
 
 train_dataset = utils.COVID19Dataset(train_feature_data,train_label_data)
@@ -71,7 +69,7 @@ loss1 = nn.MSELoss()
 if torch.cuda.is_available():
     loss1 = loss1.cuda()
 
-learning_rate = 1e-3
+learning_rate = 1e-5
 optimizer = torch.optim.SGD(myModel.parameters(), lr=learning_rate)
 
 # 设置训练网络的一些参数
