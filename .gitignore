@@ -4,3 +4,5 @@
 /HW1/src/models/
 /.idea/
 /HW2/data/
+/HW2/src/prediction.csv
+/HW2/src/model.ckpt

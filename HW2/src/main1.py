@@ -18,6 +18,13 @@ def load_feat(path):
     return feat
 
 def shift(x, n):
+    # shift(x,n) x为数组，n为数字
+    # 若n<0
+    # 左半侧元素为第一个元素重复n次
+    # 右半侧元素为x的前length-n个元素
+    # 若n>0
+    # 左半侧元素为后length-n个元素
+    # 右半侧为最后一个重复n次
     if n < 0:
         left = x[0].repeat(-n, 1)
         right = x[:n]
@@ -36,7 +43,9 @@ def concat_feat(x, concat_n):
         return x
     seq_len, feature_dim = x.size(0), x.size(1)
     x = x.repeat(1, concat_n)
+    # permute()函数：将三列按参数位置对换
     x = x.view(seq_len, concat_n, feature_dim).permute(1, 0, 2) # concat_n, seq_len, feature_dim
+    # //保留整数部分
     mid = (concat_n // 2)
     for r_idx in range(1, mid+1):
         x[mid + r_idx, :] = shift(x[mid + r_idx], r_idx)
@@ -50,6 +59,7 @@ def preprocess_data(split, feat_dir, phone_path, concat_nframes, train_ratio=0.8
 
     label_dict = {}
     if mode != 'test':
+        #按行读取train_labels.txt
       phone_file = open(os.path.join(phone_path, f'{mode}_labels.txt')).readlines()
 
       for line in phone_file:
@@ -57,7 +67,7 @@ def preprocess_data(split, feat_dir, phone_path, concat_nframes, train_ratio=0.8
           label_dict[line[0]] = [int(p) for p in line[1:]]
 
     if split == 'train' or split == 'val':
-        # split training and validation data
+        # 划分训练和测试集
         usage_list = open(os.path.join(phone_path, 'train_split.txt')).readlines()
         random.seed(train_val_seed)
         random.shuffle(usage_list)
@@ -67,7 +77,7 @@ def preprocess_data(split, feat_dir, phone_path, concat_nframes, train_ratio=0.8
         usage_list = open(os.path.join(phone_path, 'test_split.txt')).readlines()
     else:
         raise ValueError('Invalid \'split\' argument for dataset: PhoneDataset!')
-
+    # 删去两端的换行
     usage_list = [line.strip('\n') for line in usage_list]
     print('[Dataset] - # phone classes: ' + str(class_num) + ', number of utterances for ' + split + ': ' + str(len(usage_list)))
 
@@ -175,8 +185,8 @@ hidden_dim = 256                # the hidden dim
 import gc
 
 # preprocess data
-train_X, train_y = preprocess_data(split='train', feat_dir='./libriphone/feat', phone_path='./libriphone', concat_nframes=concat_nframes, train_ratio=train_ratio)
-val_X, val_y = preprocess_data(split='val', feat_dir='./libriphone/feat', phone_path='./libriphone', concat_nframes=concat_nframes, train_ratio=train_ratio)
+train_X, train_y = preprocess_data(split='train', feat_dir='../data/feat', phone_path='../data', concat_nframes=concat_nframes, train_ratio=train_ratio)
+val_X, val_y = preprocess_data(split='val', feat_dir='../data/feat', phone_path='../data', concat_nframes=concat_nframes, train_ratio=train_ratio)
 
 # get dataset
 train_set = LibriDataset(train_X, train_y)
@@ -208,6 +218,7 @@ same_seeds(seed)
 
 # create model, define a loss function, and optimizer
 model = Classifier(input_dim=input_dim, hidden_layers=hidden_layers, hidden_dim=hidden_dim).to(device)
+print(model)
 criterion = nn.CrossEntropyLoss()
 optimizer = torch.optim.AdamW(model.parameters(), lr=learning_rate)
 
@@ -276,7 +287,7 @@ if len(val_set) == 0:
 
 # testing
 # load data
-test_X = preprocess_data(split='test', feat_dir='./libriphone/feat', phone_path='./libriphone', concat_nframes=concat_nframes)
+test_X = preprocess_data(split='test', feat_dir='../data/feat', phone_path='../data', concat_nframes=concat_nframes)
 test_set = LibriDataset(test_X, None)
 test_loader = DataLoader(test_set, batch_size=batch_size, shuffle=False)
 # load model
